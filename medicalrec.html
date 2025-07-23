@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Hospital Patient Records</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f0f4f8;
+      position: relative;
+      min-height: 100vh;
+    }
+
+    header {
+      background-color: #1e3d59;
+      padding: 15px 20px;
+      color: white;
+      font-size: 24px;
+      font-weight: bold;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .container {
+      padding: 20px;
+      max-width: 1200px;
+      margin: auto;
+      padding-bottom: 60px;
+    }
+
+    .add-section {
+      background-color: #ffffff;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      margin-bottom: 20px;
+      display: none;
+    }
+
+    .add-section input,
+    .add-section select {
+      width: calc(25% - 12px);
+      padding: 10px;
+      margin: 6px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-size: 14px;
+    }
+
+    .add-section input[readonly] {
+      background-color: #e9ecef;
+    }
+
+    .add-section button {
+      margin: 6px;
+      padding: 10px 20px;
+      background-color: #0077cc;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    .add-section button:hover {
+      background-color: #005fa3;
+    }
+
+    .toggle-btn {
+      background-color: #28a745;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 5px;
+      font-size: 14px;
+      cursor: pointer;
+      margin-bottom: 10px;
+    }
+
+    .toggle-btn:hover {
+      background-color: #218838;
+    }
+
+    .search-box {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    
+    .search-box input {
+      flex: 1;
+      padding: 10px;
+      font-size: 14px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    
+    .search-box select {
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-size: 14px;
+    }
+
+    .table-wrapper {
+      max-height: 400px;
+      overflow-y: auto;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background-color: white;
+    }
+
+    th, td {
+      padding: 12px 15px;
+      text-align: left;
+      border-bottom: 1px solid #ddd;
+      font-size: 15px;
+    }
+
+    th {
+      background-color: #1e3d59;
+      color: white;
+      position: sticky;
+      top: 0;
+      z-index: 2;
+    }
+
+    tr:hover {
+      background-color: #f1f1f1;
+    }
+
+    .logout-btn {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      padding: 10px 20px;
+      background-color: #dc3545;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      font-size: 14px;
+      cursor: pointer;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+
+    .logout-btn:hover {
+      background-color: #c82333;
+    }
+
+    .action-btn {
+      padding: 6px 12px;
+      margin: 2px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 13px;
+    }
+    
+    .edit-btn {
+      background-color: #ffc107;
+      color: #212529;
+    }
+    
+    .delete-btn {
+      background-color: #dc3545;
+      color: white;
+    }
+    
+    .edit-btn:hover {
+      background-color: #e0a800;
+    }
+    
+    .delete-btn:hover {
+      background-color: #c82333;
+    }
+    
+    .btn-group {
+      display: flex;
+      gap: 5px;
+    }
+
+    .error-message {
+      color: #dc3545;
+      font-size: 14px;
+      margin-left: 10px;
+      display: none;
+    }
+
+    @media (max-width: 768px) {
+      .add-section input,
+      .add-section select {
+        width: calc(100% - 14px);
+      }
+      
+      .search-box {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <header>​​​​🩺 U M A L I | Medical Record System</header>
+
+  <div class="container">
+
+    <button class="toggle-btn" onclick="toggleForm()">+ Add New Patient</button>
+
+    <div class="add-section" id="addForm">
+      <input type="text" id="patientId" placeholder="Patient ID" readonly />
+      <button onclick="generatePatientId()">Generate Patient ID</button><br/>
+
+      <input type="text" placeholder="Surname" id="surname" />
+      <input type="text" placeholder="Given Name" id="givenName" />
+      <input type="text" placeholder="Middle Initial" id="middleInitial" />
+      <input type="date" placeholder="Date of Birth" id="dob" />
+
+      <select id="sex">
+        <option value="">Sex</option>
+        <option value="Male">Male</option>
+        <option value="Female">Female</option>
+      </select>
+
+      <input type="text" placeholder="City" id="city" />
+      <input type="text" placeholder="Street" id="street" />
+      <input type="text" placeholder="Contact Number (11 digits)" id="contactNumber" maxlength="11" 
+             oninput="this.value = this.value.replace(/[^0-9]/g, '')" />
+      <span id="contactError" class="error-message">Must be 11 digits</span>
+
+      <input type="text" placeholder="Diagnosis" id="diagnosis" />
+      <button onclick="addOrUpdatePatient()">Submit</button>
+      <span id="duplicateError" class="error-message">Patient with same name already exists</span>
+    </div>
+
+    <div class="search-box">
+      <input type="text" id="searchInput" onkeyup="searchPatient()" placeholder="Search patients..." />
+      <select id="searchType" onchange="searchPatient()">
+        <option value="all">All Fields</option>
+        <option value="id">Patient ID</option>
+        <option value="surname">Surname</option>
+        <option value="givenName">Given Name</option>
+        <option value="diagnosis">Diagnosis</option>
+      </select>
+    </div>
+
+    <div class="table-wrapper">
+      <table id="patientTable">
+        <thead>
+          <tr>
+            <th>Patient ID</th>
+            <th>Surname</th>
+            <th>Given Name</th>
+            <th>Middle Initial</th>
+            <th>Sex</th>
+            <th>Date of Birth</th>
+            <th>Address</th>
+            <th>Contact Number</th>
+            <th>Diagnosis</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Rows dynamically added here -->
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+
+  <button class="logout-btn" onclick="window.location.href='firstwebsite.html'">Logout</button>
+
+  <script>
+    let patientCounter = 1;
+    let editingRow = null;
+
+    // Load counter from localStorage if available
+    if (localStorage.getItem('patientCounter')) {
+      patientCounter = parseInt(localStorage.getItem('patientCounter'));
+    }
+
+    function toggleForm() {
+      const form = document.getElementById('addForm');
+      form.style.display = form.style.display === 'none' || form.style.display === '' ? 'block' : 'none';
+      // Clear errors when toggling
+      document.getElementById('duplicateError').style.display = 'none';
+      document.getElementById('contactError').style.display = 'none';
+    }
+
+    function generatePatientId() {
+      const formattedId = 'P' + String(patientCounter).padStart(3, '0');
+      document.getElementById('patientId').value = formattedId;
+    }
+
+    function isDuplicatePatient(surname, givenName, middleInitial) {
+      const table = document.getElementById('patientTable');
+      const rows = table.getElementsByTagName('tr');
+      
+      for (let i = 1; i < rows.length; i++) {
+        const cells = rows[i].getElementsByTagName('td');
+        if (cells[1].innerText === surname && 
+            cells[2].innerText === givenName && 
+            cells[3].innerText === middleInitial) {
+          return true;
+        }
+      }
+      return false;
+    }
+
+    function addOrUpdatePatient() {
+      const id = document.getElementById('patientId').value.trim();
+      const surname = document.getElementById('surname').value.trim();
+      const givenName = document.getElementById('givenName').value.trim();
+      const middleInitial = document.getElementById('middleInitial').value.trim();
+      const sex = document.getElementById('sex').value;
+      const dob = document.getElementById('dob').value;
+      const city = document.getElementById('city').value.trim();
+      const street = document.getElementById('street').value.trim();
+      const contactNumber = document.getElementById('contactNumber').value.trim();
+      const diagnosis = document.getElementById('diagnosis').value.trim();
+
+      // Clear previous errors
+      document.getElementById('duplicateError').style.display = 'none';
+      document.getElementById('contactError').style.display = 'none';
+
+      // Validate required fields
+      if (!id || !surname || !givenName || !middleInitial || !sex || !dob || !city || !street || !contactNumber || !diagnosis) {
+        alert("Please fill out all required fields and generate a Patient ID.");
+        return;
+      }
+
+      // Validate contact number (must be 11 digits)
+      if (contactNumber.length !== 11) {
+        document.getElementById('contactError').style.display = 'inline';
+        return;
+      }
+
+      // Check for duplicate patient (only when adding new, not when editing)
+      if (!editingRow && isDuplicatePatient(surname, givenName, middleInitial)) {
+        document.getElementById('duplicateError').style.display = 'inline';
+        return;
+      }
+
+      const address = `${street}, ${city}`;
+
+      if (editingRow) {
+        const cells = editingRow.getElementsByTagName('td');
+        cells[0].innerText = id;
+        cells[1].innerText = surname;
+        cells[2].innerText = givenName;
+        cells[3].innerText = middleInitial;
+        cells[4].innerText = sex;
+        cells[5].innerText = dob;
+        cells[6].innerText = address;
+        cells[7].innerText = contactNumber;
+        cells[8].innerText = diagnosis;
+        editingRow = null;
+      } else {
+        const table = document.getElementById('patientTable').getElementsByTagName('tbody')[0];
+        const row = table.insertRow();
+        row.innerHTML = `
+          <td>${id}</td>
+          <td>${surname}</td>
+          <td>${givenName}</td>
+          <td>${middleInitial}</td>
+          <td>${sex}</td>
+          <td>${dob}</td>
+          <td>${address}</td>
+          <td>${contactNumber}</td>
+          <td>${diagnosis}</td>
+          <td class="btn-group">
+            <button class="action-btn edit-btn" onclick="editPatient(this)">Edit</button>
+            <button class="action-btn delete-btn" onclick="deletePatient(this)">Delete</button>
+          </td>
+        `;
+        patientCounter++;
+        localStorage.setItem('patientCounter', patientCounter);
+      }
+
+      resetForm();
+    }
+
+    function deletePatient(button) {
+      if (!confirm('Are you sure you want to delete this patient record?')) {
+        return;
+      }
+      
+      const row = button.closest('tr');
+      row.remove();
+      
+      // Renumber all patient IDs sequentially
+      const table = document.getElementById('patientTable').getElementsByTagName('tbody')[0];
+      const rows = table.getElementsByTagName('tr');
+      
+      // Update patientCounter to the current count
+      patientCounter = 1;
+      
+      for (let i = 0; i < rows.length; i++) {
+        const newId = 'P' + String(patientCounter).padStart(3, '0');
+        rows[i].cells[0].innerText = newId;
+        patientCounter++;
+      }
+      
+      // Save the updated counter
+      localStorage.setItem('patientCounter', patientCounter);
+    }
+
+    function editPatient(button) {
+      const row = button.closest('tr');
+      const cells = row.getElementsByTagName('td');
+
+      document.getElementById('patientId').value = cells[0].innerText;
+      document.getElementById('surname').value = cells[1].innerText;
+      document.getElementById('givenName').value = cells[2].innerText;
+      document.getElementById('middleInitial').value = cells[3].innerText;
+      document.getElementById('sex').value = cells[4].innerText;
+      document.getElementById('dob').value = cells[5].innerText;
+
+      const [street, city] = cells[6].innerText.split(',').map(s => s.trim());
+      document.getElementById('street').value = street;
+      document.getElementById('city').value = city;
+
+      document.getElementById('contactNumber').value = cells[7].innerText;
+      document.getElementById('diagnosis').value = cells[8].innerText;
+
+      editingRow = row;
+      document.getElementById('addForm').style.display = 'block';
+    }
+
+    function resetForm() {
+      document.getElementById('patientId').value = '';
+      document.getElementById('surname').value = '';
+      document.getElementById('givenName').value = '';
+      document.getElementById('middleInitial').value = '';
+      document.getElementById('sex').value = '';
+      document.getElementById('dob').value = '';
+      document.getElementById('city').value = '';
+      document.getElementById('street').value = '';
+      document.getElementById('contactNumber').value = '';
+      document.getElementById('diagnosis').value = '';
+      document.getElementById('duplicateError').style.display = 'none';
+      document.getElementById('contactError').style.display = 'none';
+    }
+
+    function searchPatient() {
+      const input = document.getElementById("searchInput").value.toUpperCase();
+      const searchType = document.getElementById("searchType").value;
+      const table = document.getElementById("patientTable");
+      const tr = table.getElementsByTagName("tr");
+
+      for (let i = 1; i < tr.length; i++) {
+        const cells = tr[i].getElementsByTagName("td");
+        let shouldDisplay = false;
+        
+        if (input === "") {
+          shouldDisplay = true;
+        } else {
+          switch(searchType) {
+            case "id":
+              shouldDisplay = cells[0].textContent.toUpperCase().includes(input);
+              break;
+            case "surname":
+              shouldDisplay = cells[1].textContent.toUpperCase().includes(input);
+              break;
+            case "givenName":
+              shouldDisplay = cells[2].textContent.toUpperCase().includes(input);
+              break;
+            case "diagnosis":
+              shouldDisplay = cells[8].textContent.toUpperCase().includes(input);
+              break;
+            case "all":
+            default:
+              shouldDisplay = Array.from(cells).some(cell => 
+                cell.textContent.toUpperCase().includes(input)
+              );
+              break;
+          }
+        }
+        
+        tr[i].style.display = shouldDisplay ? "" : "none";
+      }
+    }
+  </script>
+
+</body>
+</html>
