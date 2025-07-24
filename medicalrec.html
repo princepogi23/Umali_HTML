@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Hospital Patient Records</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     body {
       margin: 0;
@@ -26,7 +27,7 @@
       padding: 20px;
       max-width: 1200px;
       margin: auto;
-      padding-bottom: 60px;
+      padding-bottom: 100px; /* Increased to accommodate footer */
     }
 
     .add-section {
@@ -147,6 +148,7 @@
       font-size: 14px;
       cursor: pointer;
       box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+      z-index: 100;
     }
 
     .logout-btn:hover {
@@ -190,6 +192,77 @@
       font-size: 14px;
       margin-left: 10px;
       display: none;
+    }
+
+    .footer {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      z-index: 100;
+    }
+
+    .dev-info-btn {
+      padding: 10px 15px;
+      background-color: #6c757d;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      font-size: 14px;
+      cursor: pointer;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .dev-info-btn:hover {
+      background-color: #5a6268;
+    }
+
+    .dev-info-modal {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      z-index: 1000;
+      max-width: 400px;
+      width: 90%;
+    }
+
+    .dev-info-modal h3 {
+      margin-top: 0;
+      color: #1e3d59;
+    }
+
+    .dev-info-modal p {
+      margin-bottom: 5px;
+    }
+
+    .dev-info-modal .close-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: none;
+      border: none;
+      font-size: 20px;
+      cursor: pointer;
+      color: #6c757d;
+    }
+
+    .overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(0,0,0,0.5);
+      z-index: 999;
     }
 
     @media (max-width: 768px) {
@@ -266,23 +339,205 @@
           </tr>
         </thead>
         <tbody>
-          <!-- Rows dynamically added here -->
+          <!-- Rows will be added dynamically -->
         </tbody>
       </table>
     </div>
 
   </div>
 
+  <div class="footer">
+    <button class="dev-info-btn" onclick="showDevInfo()">
+      <i class="fas fa-code"></i> Developer Info
+    </button>
+  </div>
+
   <button class="logout-btn" onclick="window.location.href='firstwebsite.html'">Logout</button>
+
+  <!-- Developer Info Modal -->
+  <div class="overlay" id="overlay"></div>
+  <div class="dev-info-modal" id="devInfoModal">
+    <button class="close-btn" onclick="hideDevInfo()">&times;</button>
+    <h3>About the Developer</h3>
+    <p><strong>Name:</strong> Umali, Macario Andrew</p>
+    <p><strong>Location:</strong> Novaliches, Quezon City</p>
+    <p><strong>Education:</strong> NURSING STUDENT at OLFU QC</p>
+    <p><strong>System:</strong> Medical Record System</p>
+    <p><strong>Contact:</strong> 09674059429</p>
+  </div>
 
   <script>
     let patientCounter = 1;
     let editingRow = null;
 
-    // Load counter from localStorage if available
-    if (localStorage.getItem('patientCounter')) {
-      patientCounter = parseInt(localStorage.getItem('patientCounter'));
+    // Sample Filipino patients data
+    const samplePatients = [
+      {
+        id: 'P001',
+        surname: 'Dela Cruz',
+        givenName: 'Juan',
+        middleInitial: 'M',
+        sex: 'Male',
+        dob: '1985-06-15',
+        city: 'Manila',
+        street: 'Taft Avenue',
+        contactNumber: '09171234567',
+        diagnosis: 'Hypertension'
+      },
+      {
+        id: 'P002',
+        surname: 'Santos',
+        givenName: 'Maria',
+        middleInitial: 'R',
+        sex: 'Female',
+        dob: '1990-11-22',
+        city: 'Quezon City',
+        street: 'Aurora Boulevard',
+        contactNumber: '09182345678',
+        diagnosis: 'Diabetes Mellitus'
+      },
+      {
+        id: 'P003',
+        surname: 'Reyes',
+        givenName: 'Carlos',
+        middleInitial: 'G',
+        sex: 'Male',
+        dob: '1978-03-08',
+        city: 'Makati',
+        street: 'Ayala Avenue',
+        contactNumber: '09193456789',
+        diagnosis: 'Bronchial Asthma'
+      },
+      {
+        id: 'P004',
+        surname: 'Garcia',
+        givenName: 'Ana',
+        middleInitial: 'S',
+        sex: 'Female',
+        dob: '1995-09-14',
+        city: 'Cebu City',
+        street: 'Osmeña Boulevard',
+        contactNumber: '09204567890',
+        diagnosis: 'Urinary Tract Infection'
+      },
+      {
+        id: 'P005',
+        surname: 'Tan',
+        givenName: 'Michael',
+        middleInitial: 'C',
+        sex: 'Male',
+        dob: '1982-12-30',
+        city: 'Davao City',
+        street: 'Roxas Avenue',
+        contactNumber: '09215678901',
+        diagnosis: 'Peptic Ulcer Disease'
+      },
+      {
+        id: 'P006',
+        surname: 'Lim',
+        givenName: 'Susan',
+        middleInitial: 'T',
+        sex: 'Female',
+        dob: '1975-07-04',
+        city: 'Iloilo City',
+        street: 'J.M. Basa Street',
+        contactNumber: '09226789012',
+        diagnosis: 'Rheumatoid Arthritis'
+      },
+      {
+        id: 'P007',
+        surname: 'Torres',
+        givenName: 'Roberto',
+        middleInitial: 'B',
+        sex: 'Male',
+        dob: '1988-01-19',
+        city: 'Baguio City',
+        street: 'Session Road',
+        contactNumber: '09237890123',
+        diagnosis: 'Chronic Kidney Disease'
+      },
+      {
+        id: 'P008',
+        surname: 'Fernandez',
+        givenName: 'Lourdes',
+        middleInitial: 'M',
+        sex: 'Female',
+        dob: '1965-05-28',
+        city: 'Bacolod City',
+        street: 'Lacson Street',
+        contactNumber: '09248901234',
+        diagnosis: 'Osteoporosis'
+      }
+    ];
+
+    // Developer info functions
+    function showDevInfo() {
+      document.getElementById('overlay').style.display = 'block';
+      document.getElementById('devInfoModal').style.display = 'block';
     }
+
+    function hideDevInfo() {
+      document.getElementById('overlay').style.display = 'none';
+      document.getElementById('devInfoModal').style.display = 'none';
+    }
+
+    // Close modal when clicking outside
+    document.getElementById('overlay').addEventListener('click', hideDevInfo);
+
+    // Initialize the application
+    function initializeApp() {
+      const table = document.getElementById('patientTable').getElementsByTagName('tbody')[0];
+      
+      // Check if there's existing data
+      if (!localStorage.getItem('patientData')) {
+        // Load sample patients for first time
+        patientCounter = samplePatients.length + 1;
+        localStorage.setItem('patientCounter', patientCounter);
+        
+        // Store sample patients in localStorage
+        localStorage.setItem('patientData', JSON.stringify(samplePatients));
+        
+        // Display sample patients
+        samplePatients.forEach(patient => {
+          addPatientToTable(patient);
+        });
+      } else {
+        // Load existing data
+        const savedPatients = JSON.parse(localStorage.getItem('patientData'));
+        patientCounter = parseInt(localStorage.getItem('patientCounter'));
+        
+        // Display saved patients
+        savedPatients.forEach(patient => {
+          addPatientToTable(patient);
+        });
+      }
+    }
+
+    // Helper function to add patient to table
+    function addPatientToTable(patient) {
+      const table = document.getElementById('patientTable').getElementsByTagName('tbody')[0];
+      const row = table.insertRow();
+      const address = `${patient.street}, ${patient.city}`;
+      
+      row.innerHTML = `
+        <td>${patient.id}</td>
+        <td>${patient.surname}</td>
+        <td>${patient.givenName}</td>
+        <td>${patient.middleInitial}</td>
+        <td>${patient.sex}</td>
+        <td>${patient.dob}</td>
+        <td>${address}</td>
+        <td>${patient.contactNumber}</td>
+        <td>${patient.diagnosis}</td>
+        <td class="btn-group">
+          <button class="action-btn edit-btn" onclick="editPatient(this)">Edit</button>
+          <button class="action-btn delete-btn" onclick="deletePatient(this)">Delete</button>
+        </td>
+      `;
+    }
+
+    // Call initialization when page loads
+    window.onload = initializeApp;
 
     function toggleForm() {
       const form = document.getElementById('addForm');
@@ -347,6 +602,9 @@
       }
 
       const address = `${street}, ${city}`;
+      const patientData = {
+        id, surname, givenName, middleInitial, sex, dob, city, street, contactNumber, diagnosis
+      };
 
       if (editingRow) {
         const cells = editingRow.getElementsByTagName('td');
@@ -360,6 +618,9 @@
         cells[7].innerText = contactNumber;
         cells[8].innerText = diagnosis;
         editingRow = null;
+        
+        // Update localStorage
+        updateLocalStorage();
       } else {
         const table = document.getElementById('patientTable').getElementsByTagName('tbody')[0];
         const row = table.insertRow();
@@ -380,9 +641,38 @@
         `;
         patientCounter++;
         localStorage.setItem('patientCounter', patientCounter);
+        
+        // Update localStorage
+        updateLocalStorage();
       }
 
       resetForm();
+    }
+
+    function updateLocalStorage() {
+      const table = document.getElementById('patientTable');
+      const rows = table.getElementsByTagName('tr');
+      const patients = [];
+      
+      for (let i = 1; i < rows.length; i++) {
+        const cells = rows[i].getElementsByTagName('td');
+        const [street, city] = cells[6].innerText.split(',').map(s => s.trim());
+        
+        patients.push({
+          id: cells[0].innerText,
+          surname: cells[1].innerText,
+          givenName: cells[2].innerText,
+          middleInitial: cells[3].innerText,
+          sex: cells[4].innerText,
+          dob: cells[5].innerText,
+          city: city,
+          street: street,
+          contactNumber: cells[7].innerText,
+          diagnosis: cells[8].innerText
+        });
+      }
+      
+      localStorage.setItem('patientData', JSON.stringify(patients));
     }
 
     function deletePatient(button) {
@@ -392,6 +682,9 @@
       
       const row = button.closest('tr');
       row.remove();
+      
+      // Update localStorage
+      updateLocalStorage();
       
       // Renumber all patient IDs sequentially
       const table = document.getElementById('patientTable').getElementsByTagName('tbody')[0];
@@ -408,6 +701,7 @@
       
       // Save the updated counter
       localStorage.setItem('patientCounter', patientCounter);
+      updateLocalStorage();
     }
 
     function editPatient(button) {
